@@ -1,0 +1,7 @@
+id: crash-delete
+match:
+  namespace: default
+  reason: CrashLoopBackOff
+action:
+  type: delete_pod
+  delay_seconds: 30
