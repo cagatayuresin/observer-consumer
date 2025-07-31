@@ -1,0 +1,640 @@
+{
+  "meta": {
+    "version": "1",
+    "type": "dashboard",
+    "name": "Observer – Full K8s & Host Dashboard",
+    "description": "Comprehensive monitoring dashboard for Kubernetes and host systems"
+  },
+  "content": {
+    "data": {
+      "type": "dashboard",
+      "attributes": {
+        "name": "Observer – Full K8s & Host Dashboard",
+        "description": "Comprehensive monitoring dashboard for Kubernetes and host systems with enhanced visualizations"
+      },
+      "relationships": {
+        "label": {
+          "data": []
+        },
+        "cell": {
+          "data": [
+            {
+              "type": "cell",
+              "id": "host_cpu_cell"
+            },
+            {
+              "type": "cell", 
+              "id": "host_memory_cell"
+            },
+            {
+              "type": "cell",
+              "id": "disk_usage_cell"
+            },
+            {
+              "type": "cell",
+              "id": "total_pods_cell"
+            },
+            {
+              "type": "cell",
+              "id": "pod_status_cell"
+            },
+            {
+              "type": "cell",
+              "id": "pod_cpu_cell"
+            },
+            {
+              "type": "cell",
+              "id": "pod_memory_cell"
+            },
+            {
+              "type": "cell",
+              "id": "top_cpu_pods_cell"
+            },
+            {
+              "type": "cell",
+              "id": "top_memory_pods_cell"
+            },
+            {
+              "type": "cell",
+              "id": "nodes_status_cell"
+            },
+            {
+              "type": "cell",
+              "id": "failed_pods_cell"
+            },
+            {
+              "type": "cell",
+              "id": "network_io_cell"
+            },
+            {
+              "type": "cell",
+              "id": "disk_io_cell"
+            },
+            {
+              "type": "cell",
+              "id": "uptime_cell"
+            },
+            {
+              "type": "cell",
+              "id": "load_avg_cell"
+            }
+          ]
+        },
+        "variable": {
+          "data": [
+            {
+              "type": "variable",
+              "id": "agent_id_var"
+            },
+            {
+              "type": "variable", 
+              "id": "namespace_var"
+            },
+            {
+              "type": "variable",
+              "id": "pod_name_var"
+            }
+          ]
+        }
+      }
+    },
+    "included": [
+      {
+        "type": "variable",
+        "id": "agent_id_var",
+        "attributes": {
+          "name": "agent_id",
+          "description": "Select Agent ID",
+          "selected": [],
+          "arguments": {
+            "type": "query",
+            "values": {
+              "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"metrics\", tag: \"agent_id\")",
+              "language": "flux"
+            }
+          }
+        },
+        "relationships": {
+          "variable": {
+            "data": []
+          }
+        }
+      },
+      {
+        "type": "variable",
+        "id": "namespace_var", 
+        "attributes": {
+          "name": "namespace",
+          "description": "Select Namespace",
+          "selected": [],
+          "arguments": {
+            "type": "query",
+            "values": {
+              "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"metrics\", tag: \"ns\")",
+              "language": "flux"
+            }
+          }
+        },
+        "relationships": {
+          "variable": {
+            "data": []
+          }
+        }
+      },
+      {
+        "type": "variable",
+        "id": "pod_name_var",
+        "attributes": {
+          "name": "pod_name", 
+          "description": "Select Pod Name",
+          "selected": [],
+          "arguments": {
+            "type": "query",
+            "values": {
+              "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"metrics\", tag: \"pod_name\")",
+              "language": "flux"
+            }
+          }
+        },
+        "relationships": {
+          "variable": {
+            "data": []
+          }
+        }
+      },
+      {
+        "type": "cell",
+        "id": "host_cpu_cell",
+        "attributes": {
+          "x": 0,
+          "y": 0,
+          "w": 4,
+          "h": 4,
+          "name": "🖥️ Host CPU Usage (%)"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "host_cpu_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "host_cpu_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and r._field == \"cpu_percent\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "editMode": "advanced",
+          "name": "Host CPU Query",
+          "builderConfig": {
+            "buckets": ["metrics"],
+            "tags": [
+              {
+                "key": "_measurement",
+                "values": ["system_metrics"],
+                "aggregateFunctionType": "filter"
+              },
+              {
+                "key": "_field", 
+                "values": ["cpu_percent"],
+                "aggregateFunctionType": "filter"
+              }
+            ],
+            "functions": [
+              {
+                "name": "mean"
+              }
+            ],
+            "aggregateWindow": {
+              "period": "auto"
+            }
+          }
+        }
+      },
+      {
+        "type": "cell",
+        "id": "host_memory_cell",
+        "attributes": {
+          "x": 4,
+          "y": 0,
+          "w": 4,
+          "h": 4,
+          "name": "🖥️ Host Memory Usage (%)"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "host_memory_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "host_memory_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and r._field == \"memory_percent\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "editMode": "advanced",
+          "name": "Host Memory Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "disk_usage_cell",
+        "attributes": {
+          "x": 8,
+          "y": 0,
+          "w": 4,
+          "h": 4,
+          "name": "💾 Disk Usage (%)"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "disk_usage_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "disk_usage_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and r._field == \"disk_percent\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> last()\n  |> yield(name: \"last\")",
+          "editMode": "advanced",
+          "name": "Disk Usage Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "total_pods_cell",
+        "attributes": {
+          "x": 0,
+          "y": 4,
+          "w": 2,
+          "h": 2,
+          "name": "☸️ Total Pods"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "total_pods_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "total_pods_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and r._field == \"pod_count\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> last()\n  |> yield(name: \"last\")",
+          "editMode": "advanced",
+          "name": "Total Pods Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "pod_status_cell",
+        "attributes": {
+          "x": 2,
+          "y": 4,
+          "w": 10,
+          "h": 4,
+          "name": "☸️ Pod Status Distribution"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "pod_status_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "pod_status_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and r._field =~ /pod_status_.*/)\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "editMode": "advanced",
+          "name": "Pod Status Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "pod_cpu_cell",
+        "attributes": {
+          "x": 0,
+          "y": 8,
+          "w": 6,
+          "h": 4,
+          "name": "📊 Pod CPU Usage (%)"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "pod_cpu_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "pod_cpu_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"pod_metrics\" and r._field == \"cpu_percent\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/ and r.ns =~ /${namespace}/ and r.pod_name =~ /${pod_name}/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "editMode": "advanced",
+          "name": "Pod CPU Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "pod_memory_cell",
+        "attributes": {
+          "x": 6,
+          "y": 8,
+          "w": 6,
+          "h": 4,
+          "name": "📊 Pod Memory Usage (%)"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "pod_memory_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "pod_memory_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"pod_metrics\" and r._field == \"memory_percent\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/ and r.ns =~ /${namespace}/ and r.pod_name =~ /${pod_name}/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "editMode": "advanced",
+          "name": "Pod Memory Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "top_cpu_pods_cell",
+        "attributes": {
+          "x": 0,
+          "y": 12,
+          "w": 6,
+          "h": 4,
+          "name": "🏆 Top 10 CPU Consuming Pods"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "top_cpu_pods_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "top_cpu_pods_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"pod_metrics\" and r._field == \"cpu_percent\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/ and r.ns =~ /${namespace}/ and r.pod_name =~ /${pod_name}/)\n  |> last()\n  |> keep(columns: [\"pod_name\", \"_value\"])\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> yield(name: \"top_cpu\")",
+          "editMode": "advanced",
+          "name": "Top CPU Pods Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "top_memory_pods_cell",
+        "attributes": {
+          "x": 6,
+          "y": 12,
+          "w": 6,
+          "h": 4,
+          "name": "🏆 Top 10 Memory Consuming Pods"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "top_memory_pods_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "top_memory_pods_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"pod_metrics\" and r._field == \"memory_percent\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/ and r.ns =~ /${namespace}/ and r.pod_name =~ /${pod_name}/)\n  |> last()\n  |> keep(columns: [\"pod_name\", \"_value\"])\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 10)\n  |> yield(name: \"top_memory\")",
+          "editMode": "advanced",
+          "name": "Top Memory Pods Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "nodes_status_cell",
+        "attributes": {
+          "x": 0,
+          "y": 16,
+          "w": 2,
+          "h": 2,
+          "name": "🚨 Nodes Status"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "nodes_status_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "nodes_status_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and r._field == \"node_count\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> last()\n  |> yield(name: \"last\")",
+          "editMode": "advanced",
+          "name": "Nodes Status Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "failed_pods_cell",
+        "attributes": {
+          "x": 2,
+          "y": 16,
+          "w": 2,
+          "h": 2,
+          "name": "🚨 Failed Pods"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "failed_pods_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "failed_pods_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and r._field == \"pod_status_failed\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> last()\n  |> yield(name: \"last\")",
+          "editMode": "advanced",
+          "name": "Failed Pods Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "network_io_cell",
+        "attributes": {
+          "x": 4,
+          "y": 16,
+          "w": 4,
+          "h": 4,
+          "name": "🌐 Network I/O"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "network_io_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "network_io_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and (r._field == \"network_bytes_in\" or r._field == \"network_bytes_out\"))\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> derivative(unit: 1s, nonNegative: true)\n  |> yield(name: \"derivative\")",
+          "editMode": "advanced",
+          "name": "Network I/O Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "disk_io_cell",
+        "attributes": {
+          "x": 8,
+          "y": 16,
+          "w": 4,
+          "h": 4,
+          "name": "💿 Disk I/O"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "disk_io_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "disk_io_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and (r._field == \"disk_read_ops\" or r._field == \"disk_write_ops\"))\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> derivative(unit: 1s, nonNegative: true)\n  |> yield(name: \"derivative\")",
+          "editMode": "advanced",
+          "name": "Disk I/O Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "uptime_cell",
+        "attributes": {
+          "x": 0,
+          "y": 18,
+          "w": 2,
+          "h": 2,
+          "name": "⏱️ Uptime"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "uptime_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "uptime_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and r._field == \"uptime_hours\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> last()\n  |> yield(name: \"last\")",
+          "editMode": "advanced",
+          "name": "Uptime Query"
+        }
+      },
+      {
+        "type": "cell",
+        "id": "load_avg_cell",
+        "attributes": {
+          "x": 2,
+          "y": 18,
+          "w": 2,
+          "h": 2,
+          "name": "📈 Load Average"
+        },
+        "relationships": {
+          "query": {
+            "data": [
+              {
+                "type": "query",
+                "id": "load_avg_query"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "query",
+        "id": "load_avg_query",
+        "attributes": {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"system_metrics\" and r._field == \"load_avg_1m\")\n  |> filter(fn: (r) => r.agent_id =~ /${agent_id}/)\n  |> last()\n  |> yield(name: \"last\")",
+          "editMode": "advanced",
+          "name": "Load Average Query"
+        }
+      }
+    ]
+  }
+}
